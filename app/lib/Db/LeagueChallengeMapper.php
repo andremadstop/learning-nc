@@ -6,6 +6,7 @@ namespace OCA\Learning\Db;
 use OCP\AppFramework\Db\QBMapper;
 use OCP\IDBConnection;
 
+/** @extends QBMapper<LeagueChallenge> */
 class LeagueChallengeMapper extends QBMapper {
     public function __construct(IDBConnection $db) {
         parent::__construct($db, 'learning_league_challenges', LeagueChallenge::class);

@@ -92,6 +92,7 @@ class IcsService {
             $end = $start->add(new DateInterval('P1D'));
             $deepLink = $this->urlGenerator->linkToRouteAbsolute('learning.page.index');
 
+            /** @var \Sabre\VObject\Component $vevent add() with a component name returns the component */
             $vevent = $calendar->add('VEVENT', [
                 'SUMMARY' => sprintf('Leitner-Wiederholung: %s', $eventGroup['course_title']),
                 'DESCRIPTION' => implode("\n", [

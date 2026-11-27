@@ -3,10 +3,7 @@
  * import questions." above a note that the pool can only be viewed. Same harness as
  * AppDashboardGate36.test.js (the real App.vue, children stubbed).
  */
-import { afterEach, describe, expect, it, vi } from 'vitest'
-import { createApp, h, nextTick } from 'vue'
-import { createMemoryHistory, createRouter } from 'vue-router'
-import { createPinia, setActivePinia } from 'pinia'
+import { describe, expect, it, vi } from 'vitest'
 
 vi.hoisted(() => {
 	globalThis.t = (_app, text) => String(text)

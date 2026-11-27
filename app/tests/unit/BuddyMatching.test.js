@@ -130,7 +130,6 @@ describe('BuddyMatching.fetchBuddies', () => {
 
 describe('BuddyMatching template sections', () => {
 	it('template contains canHelpMe section header', () => {
-		const template = BuddyMatching.template || ''
 		// For SFC components, check that the component has the right structure
 		// by verifying the render function or template references exist
 		expect(BuddyMatching.props.courseId).toBeDefined()

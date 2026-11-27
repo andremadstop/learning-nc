@@ -4,6 +4,7 @@ namespace OCA\Learning\Db;
 use OCP\AppFramework\Db\QBMapper;
 use OCP\IDBConnection;
 
+/** @extends QBMapper<CourseMember> */
 class CourseMemberMapper extends QBMapper {
     public function __construct(IDBConnection $db) {
         parent::__construct($db, 'learning_course_members', CourseMember::class);

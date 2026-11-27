@@ -28,7 +28,7 @@ async function api(page, method, path, body = null) {
 test.describe('Critical Learning Flows', () => {
   test.skip(!hasAuthContext, 'Requires authenticated seeded Nextcloud test environment (E2E_AUTH_READY=1)')
 
-  test('P1: anti-oracle guard hides correctness data during active exam', async ({ page, request }) => {
+  test('P1: anti-oracle guard hides correctness data during active exam', async ({ page }) => {
     const suppressSessionId = Number(process.env.E2E_SUPPRESS_SESSION_ID || 0)
     test.skip(suppressSessionId === 0, 'Requires E2E_SUPPRESS_SESSION_ID + E2E_TRAIN_QUESTION_ID + E2E_TRAIN_ANSWER_ID')
     await page.goto('/')

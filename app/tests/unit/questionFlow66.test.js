@@ -64,7 +64,7 @@ const OPT = (answerId, position) => ({
 })
 const REVEAL = { tracks: [DIALOG], cues: null, option_tracks: [OPT(1, 0), OPT(2, 1)] }
 
-let host, app, vm, playSpy, audioCtx
+let host, app, playSpy, audioCtx
 
 async function flush() {
 	for (let i = 0; i < 6; i++) {
@@ -85,7 +85,6 @@ async function mount(Component, props = {}, { pinia = null, listeners = {}, slot
 		app.use(pinia)
 	}
 	const root = app.mount(host)
-	vm = root.$refs.c
 	await flush()
 	return { root, state }
 }

@@ -6,6 +6,7 @@ namespace OCA\Learning\Db;
 use OCP\AppFramework\Db\QBMapper;
 use OCP\IDBConnection;
 
+/** @extends QBMapper<FeedItem> */
 class FeedItemMapper extends QBMapper {
     public function __construct(IDBConnection $db) {
         parent::__construct($db, 'learning_feed_items', FeedItem::class);

@@ -65,7 +65,6 @@ vi.mock('@nextcloud/vue/components/NcCheckboxRadioSwitch', () => stub('NcCheckbo
 vi.mock('../../src/components/PrivacyInfo.vue', () => stub('PrivacyInfo', '<div />'))
 vi.mock('../../src/components/SkinOptionPreview.vue', () => stub('SkinOptionPreview', '<span />'))
 
-import axios from '@nextcloud/axios'
 import PersonalSettings from '../../src/components/PersonalSettings.vue'
 
 let host, app

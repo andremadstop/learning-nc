@@ -7,6 +7,7 @@ use OCP\AppFramework\Db\QBMapper;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 
+/** @extends QBMapper<Question> */
 class QuestionMapper extends QBMapper {
     public function __construct(IDBConnection $db) {
         parent::__construct($db, 'learning_questions', Question::class);

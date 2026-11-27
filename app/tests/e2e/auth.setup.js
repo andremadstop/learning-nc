@@ -1,8 +1,8 @@
-const { test: setup, expect } = require('@playwright/test')
+const { test: setup } = require('@playwright/test')
 const path = require('path')
 const fs = require('fs')
 
-setup('authenticate as e2e user', async ({ page, context }) => {
+setup('authenticate as e2e user', async ({ page }) => {
   const baseURL = process.env.E2E_BASE_URL || 'http://localhost:8080/apps/learning'
   const origin = new URL(baseURL).origin
   const user = process.env.E2E_USERNAME

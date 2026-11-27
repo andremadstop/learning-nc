@@ -2,7 +2,6 @@
 declare(strict_types=1);
 namespace OCA\Learning\Service;
 
-use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use OCP\IConfig;
 use OCP\IDBConnection;
 
@@ -111,9 +110,14 @@ class MissionService {
             $qb->executeStatement();
             $this->xpService->incrementLeitnerXp($userId, $xp, true);
             $this->db->commit();
-        } catch (UniqueConstraintViolationException $e) {
+        } catch (\OCP\DB\Exception $e) {
+            // A parallel request claimed it between the check above and this insert. Nextcloud
+            // reports the UNIQUE violation as OCP\DB\Exception, not as the Doctrine class.
             $this->db->rollBack();
-            throw new \InvalidArgumentException('Mission already claimed');
+            if ($e->getReason() === \OCP\DB\Exception::REASON_UNIQUE_CONSTRAINT_VIOLATION) {
+                throw new \InvalidArgumentException('Mission already claimed');
+            }
+            throw $e;
         } catch (\Throwable $e) {
             $this->db->rollBack();
             throw $e;

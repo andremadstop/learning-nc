@@ -43,7 +43,6 @@ import axios from '@nextcloud/axios'
 import CourseTabLernraum from '../../src/components/CourseTabLernraum.vue'
 
 const POOLS_URL = '/apps/learning/api/pools'
-const ADD_URL = '/apps/learning/api/courses/7/pools'
 
 let app = null
 let host = null
@@ -83,15 +82,6 @@ async function mount({ coursePools = [], instructor = true } = {}) {
 const OWN = { id: 1, name: 'Eigener Pool' }
 const EDIT = { id: 2, name: 'Bearbeitbar geteilt', is_shared: true, permission: 'edit' }
 const READ = { id: 3, name: 'Nur lesbar geteilt', is_shared: true, permission: 'read' }
-
-function item(name) {
-	return [...host.querySelectorAll('.pool-select-item')].find((el) => el.textContent.includes(name))
-}
-
-async function openDialog() {
-	host.querySelector('.add-pool-btn').click()
-	await flush()
-}
 
 beforeEach(() => {
 	vi.clearAllMocks()

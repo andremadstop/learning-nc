@@ -43,8 +43,8 @@ export default [
 			'no-eval': 'error',
 			'no-implied-eval': 'error',
 			// caughtErrors: ESLint 9 changed the default from "none" to "all". Kept at "none" so
-			// the 207 `catch (e) {}` blocks do not turn into warnings that bury the real ones.
-			'no-unused-vars': ['warn', { argsIgnorePattern: '^_', caughtErrors: 'none' }],
+			// the 207 `catch (e) {}` blocks do not turn into findings that bury the real ones.
+			'no-unused-vars': ['error', { argsIgnorePattern: '^_', caughtErrors: 'none', ignoreRestSiblings: true }],
 			// ESLint 8 parity: ESLint 9 changed the default to "allExceptWhileTrue".
 			'no-constant-condition': ['error', { checkLoops: 'all' }],
 			// ESLint 8 parity: dropped from eslint:recommended in ESLint 9, and its new default
@@ -79,7 +79,7 @@ export default [
 		},
 		rules: {
 			'no-unused-vars': 'off',
-			'@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+			'@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', ignoreRestSiblings: true }],
 		},
 	},
 ]

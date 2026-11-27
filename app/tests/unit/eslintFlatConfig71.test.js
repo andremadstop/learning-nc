@@ -49,7 +49,7 @@ describe('eslint flat config (#71)', () => {
 		expect(await eslint.isPathIgnored(path.join(appDir, 'js/learning-main.js'))).toBe(true)
 		expect(await eslint.isPathIgnored(path.join(appDir, 'src/App.vue'))).toBe(false)
 		expect(await lint('export const a: number = 1\nconst unused = 2\n', 'src/utils/x.ts'))
-			.toEqual(['@typescript-eslint/no-unused-vars:1'])
+			.toEqual(['@typescript-eslint/no-unused-vars:2']) // an error since none were left (27.11.2026)
 		// .cjs is parsed as CommonJS, everything else as an ES module
 		expect((await eslint.calculateConfigForFile(path.join(appDir, 'tests/print/x.cjs'))).languageOptions.sourceType).toBe('commonjs')
 		expect((await eslint.calculateConfigForFile(path.join(appDir, 'src/x.js'))).languageOptions.sourceType).toBe('module')
