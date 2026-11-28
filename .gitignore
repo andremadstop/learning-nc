@@ -122,10 +122,9 @@ scripts/*
 !scripts/pdf-gate.sh
 !scripts/openapi-error-baseline.txt
 !scripts/check-node-modules.py
+!scripts/check-php-coverage.py
 !scripts/check-sql-columns.py
 !scripts/db-uninstall-probe.php
-!scripts/deploy-dev.sh
-!scripts/deploy-prod.sh
 !scripts/e2e/
 !scripts/gate-container.env.example
 !scripts/gate-container.sh
