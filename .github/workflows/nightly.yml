@@ -131,6 +131,58 @@ jobs:
           echo "FC_SEED=$FC_SEED"
           npx vitest run tests/unit/importRoundtrip65.property.test.js
 
+  mutation:
+    name: Mutation testing (report only)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45   # 8 min on 4 cores locally (27.11.2026); runners have fewer
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22.23.4
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      # Stryker only here, pinned and --no-save: a report must not cost every install its
+      # ~200 extra packages. Scope and reasons: app/stryker.config.mjs.
+      - name: npm ci + Stryker
+        working-directory: app
+        run: |
+          npm ci --no-audit --no-fund
+          npm install --no-save --no-audit --no-fund @stryker-mutator/core@10.1.1 @stryker-mutator/vitest-runner@10.1.1
+
+      # A report, never a failure: survivors are test gaps to read, not a broken build.
+      - name: stryker run
+        working-directory: app
+        run: npx stryker run
+
+      - name: Mutation summary
+        if: always()
+        working-directory: app
+        run: |
+          [ -f reports/mutation/mutation.json ] || exit 0
+          node -e '
+            const r = require("./reports/mutation/mutation.json")
+            const rows = Object.entries(r.files).map(([f, d]) => {
+              const c = s => d.mutants.filter(m => m.status === s).length
+              const killed = c("Killed") + c("Timeout"), all = d.mutants.length - c("CompileError") - c("RuntimeError")
+              return `| ${f} | ${(100 * killed / all).toFixed(1)} % | ${c("Survived")} | ${c("NoCoverage")} |`
+            })
+            console.log(["### Mutation score", "| file | score | survived | no coverage |", "|---|---|---|---|", ...rows].join("\n"))
+          ' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload mutation report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: mutation-report
+          path: app/reports/mutation/
+          retention-days: 14
+          if-no-files-found: warn
+
   persona:
     name: Persona sweep (NC 33 / pgsql, Playwright)
     runs-on: ubuntu-24.04
